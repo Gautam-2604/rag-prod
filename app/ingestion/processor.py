@@ -40,7 +40,6 @@ def process_file(file_path: str, filename: str, source_type: str):
     """Parse → chunk → save locally → embed → index in Qdrant."""
     with logfire.span("Processing File", file=filename, source=source_type):
         try:
-            # 1. Extract text based on file extension
             ext = filename.lower().rsplit(".", 1)[-1]
             if ext == "pdf":
                 full_text = parse_pdf(file_path)
@@ -59,12 +58,10 @@ def process_file(file_path: str, filename: str, source_type: str):
                 logfire.warning(f"No text extracted from {filename} — skipping.")
                 return
 
-            # 2. Chunk text
             chunks = chunk_text(full_text)
             if not chunks:
                 return
 
-            # 3. Save processed metadata locally
             processed_data = {
                 "filename": filename,
                 "source_type": source_type,
@@ -73,7 +70,6 @@ def process_file(file_path: str, filename: str, source_type: str):
             local_path = save_processed_locally(processed_data, source_type, filename)
             logfire.info(f"Saved processed data → {local_path}")
 
-            # 4. Embed and index in Qdrant
             with logfire.span("Vectorizing & Indexing"):
                 embeddings = embed_texts(chunks)
                 points = [
@@ -115,14 +111,12 @@ def run_universal_ingestion(base_dir: str, explicit_source_type: str = None, wip
     """
     with logfire.span("Universal Ingestion Started", base_directory=base_dir):
 
-        # Wipe collection if requested
         if wipe:
             with logfire.span("Wiping Collection"):
                 if qdrant_client.collection_exists(settings.QDRANT_COLLECTION):
                     qdrant_client.delete_collection(settings.QDRANT_COLLECTION)
                     logfire.info(f"Collection '{settings.QDRANT_COLLECTION}' deleted.")
 
-        # Recreate collection — dimension resolved at runtime after embedding model probe
         if not qdrant_client.collection_exists(settings.QDRANT_COLLECTION):
             dim = get_embedding_dim()
             qdrant_client.create_collection(
