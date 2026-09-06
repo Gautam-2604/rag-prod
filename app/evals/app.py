@@ -25,18 +25,12 @@ from evals.pipeline import run_pipeline, load_golden_dataset
 from evals.guardrails_eval import run_guardrails_eval, compute_guardrails_metrics
 from evals.metrics import run_all_metrics
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Page config
-# ─────────────────────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="Enterprise RAG — Eval Suite",
     page_icon="🧪",
     layout="wide",
 )
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Helpers
-# ─────────────────────────────────────────────────────────────────────────────
 SCORE_COLORS = {
     "green":  "#d4edda",
     "yellow": "#fff3cd",
@@ -81,10 +75,7 @@ def _run_async(coro):
     loop = asyncio.get_event_loop()
     return loop.run_until_complete(coro)
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Session state init
-# ─────────────────────────────────────────────────────────────────────────────
+#session init
 if "golden" not in st.session_state:
     st.session_state.golden = load_golden_dataset()
 if "pipeline_done" not in st.session_state:
